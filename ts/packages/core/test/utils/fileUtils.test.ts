@@ -433,6 +433,21 @@ describe('fileUtils', () => {
       expect(result.filePath).toBeDefined();
       expect(fs.writeFileSync).toHaveBeenCalledWith(result.filePath, body);
     });
+
+    it('returns null filePath when saving the downloaded file fails', async () => {
+      mockFetch.mockResolvedValue(downloadedFileResponse());
+      vi.mocked(fs.writeFileSync).mockImplementationOnce(() => {
+        throw new Error('EACCES: permission denied');
+      });
+
+      const result = await downloadFileFromS3({
+        toolSlug: 'github',
+        s3Url: 'https://s3.example.com/file.txt',
+        mimeType: 'text/plain',
+      });
+
+      expect(result.filePath).toBeNull();
+    });
   });
 
   describe('File object handling', () => {
